@@ -21,37 +21,30 @@ public class Admin_DashboardServlet extends HttpServlet {
 	}
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-	 	User admin = (User)request.getAttribute("loggedinUser");
-		System.out.println(request.getParameter("user_name"));
-		System.out.println(request.getParameter("password"));
 
-	        response.setContentType("text/html");
+	    User admin = (User) request.getSession().getAttribute("loggedinUser");
 
-	        response.getWriter().append("<!DOCTYPE html>\n"
-	        		+ "	            <html>\n"
-	        		+ "	            <head>\n"
-	        		+ "	                <title>Admin Dashboard - Hire A Driver</title>\n"
-	        		+ "	                <link rel=\"stylesheet\" href=\"adminStyle.css\">\n"
-	        		+ "	            </head>\n"
-	        		+ "	            <body>\n"
-	        		+ "	            \n"
-	        		+ "	                <div class=\"navbar\">\n"
-	        		+ "	                    <h2>Hire A Driver - Admin</h2>\n"
-	        		+ "	                    <button onclick=\"location.href='login.html'\">Logout</button>\n"
-	        		+ "	                </div>\n"
-	        		+ admin.getUserName()+ "<br/>"
-	        		+ admin.getEmail()+ "<br/>"
-	        		+ admin.getContactNo()+ "<br/>"
-	        		+ "				\n"
-	        		+ "	                <div class=\"content\">\n"
-	        		+ "	                    <h2>Welcome Admin</h2>\n"
-	        		+ "	                    <p>Here you can manage the system.</p>\n"
-	        		+ "	                </div>\n"
-	        		+ "	            </body>\n"
-	        		+ "	            </html>\n");
- 
-	        
+	    if (admin == null) {
+	        response.sendRedirect("login.html");
+	        return;
 	    }
+
+	    response.setContentType("text/html");
+
+	    response.getWriter().append("<!DOCTYPE html>\n"
+	            + "<html>\n"
+	            + "<head>\n"
+	            + "<title>Admin Dashboard</title>\n"
+	            + "</head>\n"
+	            + "<body>\n"
+	            + "<h2>Welcome Admin</h2>"
+	            + admin.getUserName() + "<br/>"
+	            + admin.getEmail() + "<br/>"
+	            + admin.getContactNo() + "<br/>"
+	            + "<br/><a href='logoutServlet'>Logout</a>"
+	            + "</body>\n"
+	            + "</html>");
+	}
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
 		doGet(request, response);

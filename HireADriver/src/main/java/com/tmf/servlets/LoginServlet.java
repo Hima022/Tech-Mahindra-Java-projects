@@ -3,82 +3,81 @@ package com.tmf.servlets;
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
-//import java.io.PrintWriter;
+import jakarta.servlet.http.HttpSession;
 
-import com.tmf.servlets.entity.User;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+
+//import com.tmf.servlets.entity.User;
 
 @WebServlet("/LoginServlet")
 public class LoginServlet extends HttpServlet {
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	public LoginServlet() {
-		super();
-		// TODO Auto-generated constructor stub
-	}
-	 protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-			// TODO Auto-generated method stub
-			response.getWriter().append("Served at: ").append(request.getContextPath());
-			
-			Cookie ck[] = request.getCookies();
-			String username = null;
-		
-			if (ck != null) {
-			    for (Cookie c : ck) {
-			        if ("uname".equals(c.getName())) {
-			            username = c.getValue();
-			        }
-			    }
-			}
-			User user = new User(username, "Client", "", "");
-			request.setAttribute("loggedinUser", user);
-			RequestDispatcher rd=request.getRequestDispatcher("User_home");
-			rd.forward(request, response);
-		}
-	    
-	    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-	            throws ServletException, IOException {
-	    	String uname = request.getParameter("uname");
-			String password = request.getParameter("password");
-			
-			Cookie ck=new Cookie("uname",uname);//creating cookie object  
-			response.addCookie(ck); 
-			
-			
-			Cookie ck1 = new Cookie("uname", uname);
-			ck1.setPath("/");        
-			//ck1.setMaxAge(60*60);    
-			response.addCookie(ck1);
-			
-			
-			if("admin".equals(uname) && "admin".equals(password)) {
+    public LoginServlet() {
+        super();
+    }
 
-			    User adminUser = new User("ADMIN", "Administrator", "989898", "admin@xyz.com");
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
 
-			    request.getSession().setAttribute("loggedinUser", adminUser); 
+        RequestDispatcher rd = request.getRequestDispatcher("login.html");
+        rd.forward(request, response);
+    }
 
-			    response.sendRedirect("Admin_DashboardServlet");  // 
-			}
-			else {
-			    if(uname.equals(password)) {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
 
-			        User user = new User(uname, "Client", "76767676", uname+"@gmail.com");
+        String email = request.getParameter("uname");   // your login field
+        String password = request.getParameter("password");
 
-			        request.getSession().setAttribute("loggedinUser", user); 
+        try {
 
-			        response.sendRedirect("User_homeServlet");  
-			    }
-			    else {
-			        response.sendRedirect("login.html");
-			    }
-			}
-			}
-			//doGet(request, response);
-		}
+        	Class.forName("com.mysql.cj.jdbc.Driver");
 
-	    
-	    
+            Connection con = DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/hireadriver",
+                    "root",
+                    "Hima@@491"
+            );
+
+            String sql = "SELECT * FROM users WHERE email=? AND password=?";
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setString(1, email);
+            ps.setString(2, password);
+
+            ResultSet rs = ps.executeQuery();
+
+            if (rs.next()) {
+
+                String userType = rs.getString("user_type");
+                int userId = rs.getInt("user_id");
+
+                HttpSession session = request.getSession();
+                session.setAttribute("userId", userId);
+                session.setAttribute("userType", userType);
+
+                if ("CUSTOMER".equals(userType)) {
+                    response.sendRedirect("User_homeServlet");
+                }
+                else if ("DRIVER".equals(userType)) {
+                    response.sendRedirect("Driver_homeServlet");
+                }
+
+            } else {
+                response.getWriter().println("Invalid Email or Password");
+            }
+
+            con.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.getWriter().println("Login Error!");
+        }
+    }}
