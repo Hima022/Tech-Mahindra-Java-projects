@@ -1,12 +1,11 @@
 package com.tmf.servlets;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
+import java.util.List;
 
-//import com.tmf.servlets.entity.User;
+import com.tmf.servlets.dao.BookingDAO;
+import com.tmf.servlets.dao.BookingDAOImpl;
+import com.tmf.servlets.entity.Booking;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -24,47 +23,40 @@ public class Admin_DashboardServlet extends HttpServlet {
 		// TODO Auto-generated constructor stub
 	}
 
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
-	    protected void doGet(HttpServletRequest request,
-	                         HttpServletResponse response)
-	            throws IOException {
+		HttpSession session = request.getSession(false);
 
-	        HttpSession session = request.getSession(false);
+		if (session == null || !"ADMIN".equals(session.getAttribute("userType"))) {
+			response.sendRedirect("login.html");
+			return;
+		}
 
-	        if (session == null ||
-	            !"ADMIN".equals(session.getAttribute("userType"))) {
-	            response.sendRedirect("login.html");
-	            return;
-	        }
+		try {
 
-	        try {
-	        	Class.forName("com.mysql.cj.jdbc.Driver");
+			BookingDAO bookingDAO = new BookingDAOImpl();
+			List<Booking> bookings = bookingDAO.getAllBookings();
 
-	            Connection con = DriverManager.getConnection(
-	                    "jdbc:mysql://localhost:3306/hireadriver",
-	                    "root",
-	                    "Hima@@491"
-	            );
-	            PrintWriter out = response.getWriter();
+			StringBuffer sb = new StringBuffer();
+			sb.append("<h2>All Bookings</h2>");
 
-	            ResultSet rs = con.createStatement().executeQuery(
-	                    "SELECT booking_id,status FROM bookings");
+			for (Booking b : bookings) {
+				sb.append("Booking ID: ").append(b.getBookingId()).append(" | Status: ").append(b.getStatus())
+						.append("<br>");
+			}
 
-	            out.println("<h2>All Bookings</h2>");
-	            while (rs.next()) {
-	                out.println("Booking ID: " +
-	                        rs.getInt("booking_id") +
-	                        " | Status: " +
-	                        rs.getString("status") + "<br>");
-	            }
+			response.getWriter().println(sb.toString());
 
-	        } catch (Exception e) {
-	            e.printStackTrace();
-	        }
-	    }
-	
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+
+
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
 		// TODO Auto-generated method stub
 		doGet(request, response);
 	}
-	}
+}

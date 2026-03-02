@@ -1,5 +1,11 @@
 package com.tmf.servlets;
 
+import java.io.IOException;
+
+import com.tmf.servlets.dao.UserDAO;
+import com.tmf.servlets.dao.UserDAOImpl;
+import com.tmf.servlets.entity.User;
+
 import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -7,12 +13,6 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 
 //import com.tmf.servlets.entity.User;
 
@@ -32,52 +32,36 @@ public class LoginServlet extends HttpServlet {
     }
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+            throws IOException {
 
-        String email = request.getParameter("uname");   // your login field
+        String email = request.getParameter("uname");
         String password = request.getParameter("password");
 
         try {
 
-        	Class.forName("com.mysql.cj.jdbc.Driver");
+            UserDAO userDAO = new UserDAOImpl();
+            User user = userDAO.loginUser(email, password);
 
-            Connection con = DriverManager.getConnection(
-                    "jdbc:mysql://localhost:3306/hireadriver",
-                    "root",
-                    "Hima@@491"
-            );
-
-            String sql = "SELECT * FROM users WHERE email=? AND password=?";
-            PreparedStatement ps = con.prepareStatement(sql);
-            ps.setString(1, email);
-            ps.setString(2, password);
-
-            ResultSet rs = ps.executeQuery();
-
-            if (rs.next()) {
-
-                String userType = rs.getString("user_type");
-                int userId = rs.getInt("user_id");
+            if (user != null) {
 
                 HttpSession session = request.getSession();
-                session.setAttribute("userId", userId);
-                session.setAttribute("userType", userType);
+                session.setAttribute("userId", user.getUserId());
+                session.setAttribute("userType", user.getUserType());
 
-                if ("CUSTOMER".equals(userType)) {
+                if ("CUSTOMER".equals(user.getUserType())) {
                     response.sendRedirect("User_homeServlet");
-                }
-                else if ("DRIVER".equals(userType)) {
+                } else if ("DRIVER".equals(user.getUserType())) {
                     response.sendRedirect("Driver_homeServlet");
+                } else if ("ADMIN".equals(user.getUserType())) {
+                    response.sendRedirect("Admin_DashboardServlet");
                 }
 
             } else {
-                response.getWriter().println("Invalid Email or Password");
+                response.getWriter().println("Invalid Credentials");
             }
-
-            con.close();
 
         } catch (Exception e) {
             e.printStackTrace();
-            response.getWriter().println("Login Error!");
         }
-    }}
+    }
+}

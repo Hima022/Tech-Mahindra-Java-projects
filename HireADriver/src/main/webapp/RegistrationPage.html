@@ -12,37 +12,44 @@
 
 <form action="RegistrationServlet" method="post">
 
-    <label>First Name</label>
-    <input type="text" name="first_name" required>
+Uname:
+<input type="text" name="uname" required>
 
-    <label>Last Name</label>
-    <input type="text" name="last_name" required>
-    
-     <label>User Name</label>
-    <input type="text" name="uname" required>
+First Name:
+<input type="text" name="first_name" required>
 
-    <label>Password</label>
-    <input type="password" name="password" required>
+Last Name:
+<input type="text" name="last_name" required>
 
-    <label>Phone Number</label>
-    <input type="text" name="phone_number" required>
+Email:
+<input type="email" name="email" required>
 
-    <label>Email</label>
-    <input type="email" name="email" required>
+Phone:
+<input type="text" name="phone_number" required>
 
-    <label>Date of Birth</label>
-    <input type="date" name="dob" required>
+Password:
+<input type="password" name="password" required>
 
-    <label>User Type</label>
-    <select name="user_type" required>
-        <option value="">-- Select User Type --</option>
-        <option value="CUSTOMER">Customer</option>
-        <option value="DRIVER">Driver</option>
-    </select>
-    License Number:
-	<input type="text" name="license_number"><br><br>
-  
-    <input type="submit" value="Register">
+Gender:
+<select name="gender">
+  <option value="MALE">Male</option>
+  <option value="FEMALE">Female</option>
+  <option value="OTHERS">Others</option>
+</select>
+
+User Type:
+<select name="user_type" id="userType" onchange="toggleLicense()">
+  <option value="CUSTOMER">Customer</option>
+  <option value="DRIVER">Driver</option>
+</select>
+
+License Number (only for driver):
+<input type="text" name="license_number">
+
+DOB:
+<input type="date" name="dob" required>
+
+<button type="submit">Register</button>
 
 </form>
 

@@ -1,18 +1,22 @@
 package com.tmf.servlets;
+import java.io.IOException;
+import java.util.List;
 
-import jakarta.servlet.ServletException;
+import com.tmf.servlets.dao.BookingDAO;
+import com.tmf.servlets.dao.BookingDAOImpl;
+import com.tmf.servlets.dao.RoleDAO;
+import com.tmf.servlets.dao.RoleDAOImpl;
+import com.tmf.servlets.dao.UserDAO;
+import com.tmf.servlets.dao.UserDAOImpl;
+import com.tmf.servlets.entity.Booking;
+import com.tmf.servlets.entity.Driver;
+import com.tmf.servlets.entity.User;
+
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-
-import java.io.IOException;
-//import java.io.PrintWriter;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 
 @WebServlet("/Driver_homeServlet")
 public class Driver_homeServlet extends HttpServlet {
@@ -23,93 +27,182 @@ public class Driver_homeServlet extends HttpServlet {
 		// TODO Auto-generated constructor stub
 	}
 
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-		HttpSession session = request.getSession(false);
+	    protected void doGet(HttpServletRequest request,
+	                         HttpServletResponse response)
+	            throws IOException {
 
-		if (session == null || !"DRIVER".equals(session.getAttribute("userType"))) {
-			response.sendRedirect("login.html");
-			return;
-		}
+	        response.setContentType("text/html");
 
-		int userId = (int) session.getAttribute("userId");
+	        HttpSession session = request.getSession(false);
 
-		String license = "";
-		try {
-			Class.forName("com.mysql.cj.jdbc.Driver");
+	        if (session == null ||
+	            !"DRIVER".equals(session.getAttribute("userType"))) {
+	            response.sendRedirect("login.html");
+	            return;
+	        }
 
-			Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/hireadriver", "root",
-					"Hima@@491");
+	        int userId = (int) session.getAttribute("userId");
+	        String action = request.getParameter("action");
 
-			PreparedStatement ps = con.prepareStatement("SELECT u.first_name,u.email,d.license_number,d.document_path "
-					+ "FROM users u JOIN drivers d ON u.user_id=d.user_id WHERE u.user_id=?");
+	        try {
 
-			ps.setInt(1, userId);
-			ResultSet rs = ps.executeQuery();
+	            UserDAO userDAO = new UserDAOImpl();
+	            RoleDAO roleDAO = new RoleDAOImpl();
+	            BookingDAO bookingDAO = new BookingDAOImpl();
 
-			if (rs.next()) {
-				rs.getString("first_name");
-				rs.getString("email");
-				license = rs.getString("license_number");
-				rs.getString("document_path");
-			}
+	            User user = userDAO.getUserById(userId);
+	            Driver driver = roleDAO.getDriverByUserId(userId);
+	            List<Booking> bookings =
+	                    bookingDAO.getBookingsByDriver(userId);
 
-			con.close();
+	            if (user == null) {
+	                response.getWriter().println("User not found.");
+	                return;
+	            }
 
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+	            StringBuilder sb = new StringBuilder();
 
-		response.setContentType("text/html");
+	            sb.append("<html><head>");
+	            sb.append("<title>Driver Dashboard</title>");
+	            sb.append("<style>");
+	            sb.append("body{font-family:Arial;padding:30px;background:#f5f5f5;}");
+	            sb.append("table{border-collapse:collapse;width:100%;}");
+	            sb.append("th,td{border:1px solid #ccc;padding:8px;text-align:center;}");
+	            sb.append("th{background:#1e3c72;color:white;}");
+	            sb.append(".card{background:white;padding:20px;margin-bottom:20px;border-radius:8px;}");
+	            sb.append("</style>");
+	            sb.append("</head><body>");
 
-		response.getWriter().append("            <!DOCTYPE html>\r\n" + "            <html>\r\n"
-				+ "            <head>\r\n" + "                <title>Driver Home - Hire A Driver</title>\r\n"
-				+ "                <link rel=\"stylesheet\" href=\"DriverStyle.css\">\r\n" + "            </head>\r\n"
-				+ "            <body>\r\n" + "\r\n" + "            <div class=\"navbar\">\r\n"
-				+ "                <h2>Hire A Driver</h2>\r\n"
-				+ "                <button onclick=\"location.href='logoutServlet'\">Logout</button>\r\n"
-				+ "            </div>\r\n" + "\r\n" + "            <div class=\"welcome-section\">\r\n"
-				+ "                <h2>Welcome, \"\"\" + firstName + \"\"\"</h2>\r\n" + "            </div>\r\n"
-				+ "\r\n" + "            <div class=\"container\">\r\n" + "\r\n"
-				+ "                <div class=\"card\">\r\n" + "                    <h3>Profile</h3>\r\n"
-				+ "                    <p>Email: \"\"\" + email + \"\"\"</p>\r\n"
-				+ "                    <p>License: \"\"\" + \r\n"
-				+ "                    (license == null || license.isEmpty() ? \"Not Submitted\" : license) + \"\"\"\r\n"
-				+ "                    </p>\r\n" + "                    <p>Document: \"\"\" + \r\n"
-				+ "                    (documentPath == null ? \"Not Uploaded\" : documentPath) + \"\"\"\r\n"
-				+ "                    </p>\r\n" + "                </div>");
+	            // 🔹 Welcome
+	            sb.append("<div class='card'>");
+	            sb.append("<h2>Welcome ").append(user.getFirstName()).append("</h2>");
+	            sb.append("</div>");
 
-		// 🔹 If License Not Submitted
-		if (license == null || license.isEmpty()) {
+	            // 🔹 Profile
+	            sb.append("<div class='card'>");
+	            sb.append("<h3>My Profile</h3>");
+	            sb.append("<p><b>Name:</b> ")
+	              .append(user.getFirstName()).append(" ")
+	              .append(user.getLastName()).append("</p>");
+	            sb.append("<p><b>Email:</b> ")
+	              .append(user.getEmail()).append("</p>");
+	            sb.append("<p><b>Phone:</b> ")
+	              .append(user.getPhoneNumber()).append("</p>");
 
-			response.getWriter()
-					.append(" <div class=\"card\">\r\n" + "                        <h3>Submit License Number</h3>\r\n"
-							+ "                        <form action=\"UploadDocumentServlet\" method=\"post\">\r\n"
-							+ "                            <input type=\"text\" name=\"license_number\"\r\n"
-							+ "                                   placeholder=\"Enter License Number\" required>\r\n"
-							+ "                            <button type=\"submit\">Submit</button>\r\n"
-							+ "                        </form>\r\n" + "                    </div>");
-		}
+	            sb.append("<p><b>License:</b> ");
 
-		// 🔹 Upload Document Section
-		response.getWriter()
-				.append("  <div class=\"card\">\r\n" + "                    <h3>Upload Document</h3>\r\n"
-						+ "                    <form action=\"UploadDocumentServlet\"\r\n"
-						+ "                          method=\"post\"\r\n"
-						+ "                          enctype=\"multipart/form-data\">\r\n"
-						+ "                        <input type=\"file\" name=\"document\" required>\r\n"
-						+ "                        <button type=\"submit\">Upload</button>\r\n"
-						+ "                    </form>\r\n" + "                </div>\r\n" + "\r\n"
-						+ "            </div>\r\n" + "\r\n" + "            </body>\r\n" + "            </html>");
+	            if (driver == null || driver.getLicenseNumber() == null) {
+	                sb.append("Not Submitted");
+	            } else {
+	                sb.append(driver.getLicenseNumber());
+	            }
+
+	            sb.append("</p>");
+	            sb.append("<a href='Driver_homeServlet?action=edit'>Edit Profile</a>");
+	            sb.append("</div>");
+
+	            // 🔹 Edit Profile
+	            if ("edit".equals(action)) {
+
+	                sb.append("<div class='card'>");
+	                sb.append("<h3>Edit Profile</h3>");
+	                sb.append("<form method='post'>");
+
+	                sb.append("First Name:<br>");
+	                sb.append("<input type='text' name='first_name' value='")
+	                  .append(user.getFirstName())
+	                  .append("' required><br><br>");
+
+	                sb.append("Last Name:<br>");
+	                sb.append("<input type='text' name='last_name' value='")
+	                  .append(user.getLastName())
+	                  .append("' required><br><br>");
+
+	                sb.append("Phone:<br>");
+	                sb.append("<input type='text' name='phone_number' value='")
+	                  .append(user.getPhoneNumber())
+	                  .append("' required><br><br>");
+
+	                sb.append("<button type='submit'>Update</button>");
+	                sb.append("</form>");
+	                sb.append("</div>");
+	            }
+
+	            // 🔹 Upload Document
+	            sb.append("<div class='card'>");
+	            sb.append("<h3>Upload License Document</h3>");
+	            sb.append("<form action='UploadDocumentServlet' method='post' enctype='multipart/form-data'>");
+	            sb.append("<input type='file' name='document' required><br><br>");
+	            sb.append("<button type='submit'>Upload</button>");
+	            sb.append("</form>");
+	            sb.append("</div>");
+
+	            // 🔹 Booking History
+	            sb.append("<div class='card'>");
+	            sb.append("<h3>My Bookings</h3>");
+
+	            if (bookings == null || bookings.isEmpty()) {
+	                sb.append("<p>No bookings found.</p>");
+	            } else {
+
+	                sb.append("<table>");
+	                sb.append("<tr>");
+	                sb.append("<th>ID</th>");
+	                sb.append("<th>Source</th>");
+	                sb.append("<th>Destination</th>");
+	                sb.append("<th>Status</th>");
+	                sb.append("</tr>");
+
+	                for (Booking b : bookings) {
+	                    sb.append("<tr>");
+	                    sb.append("<td>").append(b.getBookingId()).append("</td>");
+	                    sb.append("<td>").append(b.getSource()).append("</td>");
+	                    sb.append("<td>").append(b.getDestination()).append("</td>");
+	                    sb.append("<td>").append(b.getStatus()).append("</td>");
+	                    sb.append("</tr>");
+	                }
+
+	                sb.append("</table>");
+	            }
+
+	            sb.append("</div>");
+	            sb.append("<br><a href='LogoutServlet'>Logout</a>");
+	            sb.append("</body></html>");
+
+	            response.getWriter().println(sb.toString());
+
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	            response.getWriter().println("Error loading driver dashboard.");
+	        }
+	    }
+
+	    protected void doPost(HttpServletRequest request,
+	                          HttpServletResponse response)
+	            throws IOException {
+
+	        HttpSession session = request.getSession(false);
+	        if (session == null) {
+	            response.sendRedirect("login.html");
+	            return;
+	        }
+
+	        int userId = (int) session.getAttribute("userId");
+
+	        String firstName = request.getParameter("first_name");
+	        String lastName = request.getParameter("last_name");
+	        String phone = request.getParameter("phone_number");
+
+	        try {
+
+	            UserDAO userDAO = new UserDAOImpl();
+	            userDAO.updateProfile(userId, firstName, lastName, phone);
+
+	            response.sendRedirect("Driver_homeServlet");
+
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	            response.getWriter().println("Profile update failed.");
+	        }
+	    }
 	}
-
-	/*
-	 * } catch (Exception e) { e.printStackTrace(); } }
-	 */
-
-	protected void doPost(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, IOException {
-		// TODO Auto-generated method stub
-		doGet(request, response);
-	}
-
-}
