@@ -1,6 +1,6 @@
 package com.tmf.servlets;
 
-import jakarta.servlet.ServletException;
+//import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 
 import jakarta.servlet.http.HttpServlet;
@@ -14,19 +14,19 @@ import java.io.IOException;
 public class LogoutServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
-    public LogoutServlet() {
-        super();
-        // TODO Auto-generated constructor stub
-    }
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+	public LogoutServlet() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
 
-        HttpSession session = request.getSession(false);
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
-        if (session != null) {
-            session.invalidate();   // 🔥 Session destroyed here
-        }
+		HttpSession session = request.getSession(false);
 
-        response.sendRedirect("login.html");
-    }
+		if (session != null) {
+			session.invalidate(); 
+		}
+
+		response.sendRedirect("login.jsp"); 
+	}
 }

@@ -28,7 +28,7 @@ public class Admin_DashboardServlet extends HttpServlet {
 		HttpSession session = request.getSession(false);
 
 		if (session == null || !"ADMIN".equals(session.getAttribute("userType"))) {
-			response.sendRedirect("login.html");
+			response.sendRedirect("login.jsp");
 			return;
 		}
 

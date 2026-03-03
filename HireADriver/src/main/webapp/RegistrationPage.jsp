@@ -1,3 +1,5 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -12,46 +14,64 @@
 
 <form action="RegistrationServlet" method="post">
 
-Uname:
+<label>Uname:</label>
 <input type="text" name="uname" required>
 
-First Name:
+<label>First Name:</label>
 <input type="text" name="first_name" required>
 
-Last Name:
+<label>Last Name:</label>
 <input type="text" name="last_name" required>
 
-Email:
+<label>Email:</label>
 <input type="email" name="email" required>
 
-Phone:
+<label>Phone:</label>
 <input type="text" name="phone_number" required>
 
-Password:
+<label>Password:</label>
 <input type="password" name="password" required>
 
-Gender:
-<select name="gender">
+<label>Gender:</label>
+<select name="gender" required>
   <option value="MALE">Male</option>
   <option value="FEMALE">Female</option>
   <option value="OTHERS">Others</option>
 </select>
 
-User Type:
-<select name="user_type" id="userType" onchange="toggleLicense()">
+<label>User Type:</label>
+<select name="user_type" required>
   <option value="CUSTOMER">Customer</option>
   <option value="DRIVER">Driver</option>
 </select>
 
-License Number (only for driver):
+<label>License Number (Only for Driver):</label>
 <input type="text" name="license_number">
 
-DOB:
+<label>DOB:</label>
 <input type="date" name="dob" required>
 
+<br><br>
 <button type="submit">Register</button>
 
 </form>
+
+<!--Dynamic Message Section -->
+
+<% if (request.getAttribute("error") != null) { %>
+    <p style="color:red;">
+        <%= request.getAttribute("error") %>
+    </p>
+<% } %>
+
+<% if (request.getAttribute("success") != null) { %>
+    <p style="color:green;">
+        <%= request.getAttribute("success") %>
+    </p>
+<% } %>
+
+<br>
+<a href="login.jsp">Already have an account? Login</a>
 
 </body>
 </html>

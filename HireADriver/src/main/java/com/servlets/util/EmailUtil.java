@@ -1,4 +1,4 @@
-package com.tmf.servlets;
+package com.servlets.util;
 
 import jakarta.mail.PasswordAuthentication;
 import java.util.Properties;

@@ -6,7 +6,6 @@ import com.tmf.servlets.dao.UserDAO;
 import com.tmf.servlets.dao.UserDAOImpl;
 import com.tmf.servlets.entity.User;
 
-import jakarta.servlet.RequestDispatcher;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -26,9 +25,9 @@ public class LoginServlet extends HttpServlet {
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
-        RequestDispatcher rd = request.getRequestDispatcher("login.html");
-        rd.forward(request, response);
+    	request.setAttribute("error", "Invalid Username or Password");
+    	request.getRequestDispatcher("login.jsp")
+    	       .forward(request, response);
     }
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -57,8 +56,8 @@ public class LoginServlet extends HttpServlet {
                 }
 
             } else {
-                response.getWriter().println("Invalid Credentials");
-            }
+            	response.getWriter().println("Invalid Credentials");
+            	}
 
         } catch (Exception e) {
             e.printStackTrace();

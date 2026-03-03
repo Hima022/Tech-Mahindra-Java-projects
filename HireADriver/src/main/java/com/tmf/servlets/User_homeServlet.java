@@ -28,12 +28,10 @@ public class User_homeServlet extends HttpServlet {
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
-		response.setContentType("text/html");
-
 		HttpSession session = request.getSession(false);
 
 		if (session == null || !"CUSTOMER".equals(session.getAttribute("userType"))) {
-			response.sendRedirect("login.html");
+			response.sendRedirect("login.jsp");
 			return;
 		}
 
@@ -46,74 +44,14 @@ public class User_homeServlet extends HttpServlet {
 			BookingDAO bookingDAO = new BookingDAOImpl();
 
 			User user = userDAO.getUserById(userId);
-
-			StringBuffer sb = new StringBuffer();
-
-			sb.append("<html><head>");
-			sb.append("<title>User Home</title>");
-			sb.append("</head><body>");
-
-			sb.append("<h2>Welcome " + user.getFirstName() + "</h2>");
-
-// 🔹 PROFILE SECTION
-			sb.append("<h3>My Profile</h3>");
-			sb.append("<p><b>Name:</b> " + user.getFirstName() + " " + user.getLastName() + "</p>");
-			sb.append("<p><b>Email:</b> " + user.getEmail() + "</p>");
-			sb.append("<p><b>Phone:</b> " + user.getPhoneNumber() + "</p>");
-
-			sb.append("<a href='User_homeServlet?action=edit'>Update Profile</a>");
-			sb.append("<br><br>");
-
-// 🔹 EDIT PROFILE
-			if ("edit".equals(action)) {
-
-				sb.append("<h3>Edit Profile</h3>");
-				sb.append("<form method='post'>");
-
-				sb.append("First Name:<br>");
-				sb.append("<input type='text' name='first_name' value='" + user.getFirstName() + "' required><br><br>");
-
-				sb.append("Last Name:<br>");
-				sb.append("<input type='text' name='last_name' value='" + user.getLastName() + "' required><br><br>");
-
-				sb.append("Phone:<br>");
-				sb.append("<input type='text' name='phone_number' value='" + user.getPhoneNumber()
-						+ "' required><br><br>");
-
-				sb.append("<button type='submit'>Update</button>");
-				sb.append("</form>");
-			}
-
-// 🔹 BOOKING HISTORY
-			sb.append("<h3>Previous Bookings</h3>");
-
 			List<Booking> bookings = bookingDAO.getBookingsByCustomer(userId);
 
-			sb.append("<table border='1' cellpadding='10'>");
-			sb.append("<tr>");
-			sb.append("<th>Booking ID</th>");
-			sb.append("<th>Source</th>");
-			sb.append("<th>Destination</th>");
-			sb.append("<th>Status</th>");
-			sb.append("</tr>");
+// 🔥 Send data to JSP
+			request.setAttribute("user", user);
+			request.setAttribute("bookings", bookings);
+			request.setAttribute("action", action);
 
-			for (Booking b : bookings) {
-				sb.append("<tr>");
-				sb.append("<td>" + b.getBookingId() + "</td>");
-				sb.append("<td>" + b.getSource() + "</td>");
-				sb.append("<td>" + b.getDestination() + "</td>");
-				sb.append("<td>" + b.getStatus() + "</td>");
-				sb.append("</tr>");
-			}
-
-			sb.append("</table>");
-
-			sb.append("<br><br>");
-			sb.append("<a href='LogoutServlet'>Logout</a>");
-
-			sb.append("</body></html>");
-
-			response.getWriter().println(sb.toString());
+			request.getRequestDispatcher("User_home.jsp").forward(request, response);
 
 		} catch (Exception e) {
 			e.printStackTrace();
