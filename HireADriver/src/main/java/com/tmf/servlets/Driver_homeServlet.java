@@ -1,24 +1,29 @@
 package com.tmf.servlets;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
 import com.tmf.servlets.dao.BookingDAO;
 import com.tmf.servlets.dao.BookingDAOImpl;
-import com.tmf.servlets.dao.RoleDAO;
-import com.tmf.servlets.dao.RoleDAOImpl;
+import com.tmf.servlets.dao.DriverDAO;
+import com.tmf.servlets.dao.DriverDAOImpl;
 import com.tmf.servlets.dao.UserDAO;
 import com.tmf.servlets.dao.UserDAOImpl;
 import com.tmf.servlets.entity.Booking;
-import com.tmf.servlets.entity.Driver;
+
+import com.tmf.servlets.entity.Trip;
 import com.tmf.servlets.entity.User;
 
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-
+import jakarta.servlet.http.Part;
+@MultipartConfig
 @WebServlet("/Driver_homeServlet")
 public class Driver_homeServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
@@ -28,7 +33,8 @@ public class Driver_homeServlet extends HttpServlet {
 		// TODO Auto-generated constructor stub
 	}
 
-	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+	protected void doGet(HttpServletRequest request, HttpServletResponse response)
+			throws ServletException, IOException {
 
 		HttpSession session = request.getSession(false);
 
@@ -37,57 +43,98 @@ public class Driver_homeServlet extends HttpServlet {
 			return;
 		}
 
-		int userId = (int) session.getAttribute("userId");
-		String action = request.getParameter("action");
+		int driverId = (int) session.getAttribute("userId");
 
 		try {
 
 			UserDAO userDAO = new UserDAOImpl();
-			RoleDAO roleDAO = new RoleDAOImpl();
+			DriverDAO driverDAO = new DriverDAOImpl();
 			BookingDAO bookingDAO = new BookingDAOImpl();
 
-			User user = userDAO.getUserById(userId);
-			Driver driver = roleDAO.getDriverByUserId(userId);
-			List<Booking> bookings = bookingDAO.getBookingsByDriver(userId);
+			// Logged-in driver (from users table)
+			User driver = userDAO.getUserById(driverId);
 
-// 🔥 Send data to JSP
-			request.setAttribute("user", user);
+			// Live trips available
+			List<Trip> trips = driverDAO.getLiveTrips();
+
+			// Driver's bookings
+			List<Booking> bookings = bookingDAO.getBookingsByDriver(driverId);
+
 			request.setAttribute("driver", driver);
+			request.setAttribute("trips", trips);
 			request.setAttribute("bookings", bookings);
-			request.setAttribute("action", action);
 
 			request.getRequestDispatcher("driverhome.jsp").forward(request, response);
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			response.getWriter().println("Error loading driver dashboard.");
 		}
 	}
 
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+	// Handle Accept / Reject
+	protected void doPost(HttpServletRequest request, HttpServletResponse response)
+			throws IOException {
 
 		HttpSession session = request.getSession(false);
+
 		if (session == null) {
 			response.sendRedirect("login.jsp");
 			return;
 		}
 
-		int userId = (int) session.getAttribute("userId");
+		int driverId = (int) session.getAttribute("userId");
 
-		String firstName = request.getParameter("first_name");
-		String lastName = request.getParameter("last_name");
-		String phone = request.getParameter("phone_number");
+		String action = request.getParameter("action");
+
+		DriverDAO dao = new DriverDAOImpl();
 
 		try {
 
-			UserDAO userDAO = new UserDAOImpl();
-			userDAO.updateProfile(userId, firstName, lastName, phone);
+			if ("acceptTrip".equals(action)) {
 
-			response.sendRedirect("Driver_homeServlet");
+				int tripId = Integer.parseInt(request.getParameter("tripId"));
+				double price = Double.parseDouble(request.getParameter("price"));
+
+				dao.acceptTrip(tripId, driverId, price);
+			}
+
+			else if ("rejectTrip".equals(action)) {
+
+				int tripId = Integer.parseInt(request.getParameter("tripId"));
+
+				dao.rejectTrip(tripId, driverId);
+			}
+			else if("updateProfile".equals(action)){
+
+				String name = request.getParameter("name");
+				String email = request.getParameter("email");
+				String phone = request.getParameter("phone");
+				int experience = Integer.parseInt(request.getParameter("experience"));
+
+				Part license = request.getPart("license");
+				Part idproof = request.getPart("idproof");
+
+				String uploadPath = getServletContext().getRealPath("") + "documents";
+
+				File uploadDir = new File(uploadPath);
+				if(!uploadDir.exists()){
+				uploadDir.mkdir();
+				}
+
+				String licenseName = license.getSubmittedFileName();
+				String idName = idproof.getSubmittedFileName();
+
+				license.write(uploadPath + "/" + licenseName);
+				idproof.write(uploadPath + "/" + idName);
+
+				UserDAO.updateDriverProfile(driverId,name,email,phone,experience,licenseName,idName);
+
+				}
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			response.getWriter().println("Profile update failed.");
 		}
+
+		response.sendRedirect("Driver_homeServlet");
 	}
 }

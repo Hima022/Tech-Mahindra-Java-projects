@@ -5,125 +5,182 @@
 <%@ page import="com.tmf.servlets.entity.*"%>
 
 <%
-User user = (User) request.getAttribute("user");
-Driver driver = (Driver) request.getAttribute("driver");
+User driver = (User) request.getAttribute("driver");
+List<Trip> trips = (List<Trip>) request.getAttribute("trips");
 List<Booking> bookings = (List<Booking>) request.getAttribute("bookings");
-String action = (String) request.getAttribute("action");
 %>
 
 <html>
+
 <head>
-<title>Driver</title>
+
+<title>Driver Dashboard</title>
+
+<style>
+body {
+	background: black;
+	color: white;
+	font-family: Arial;
+	padding: 20px;
+}
+
+.topbar {
+	display: flex;
+	align-items: center;
+	gap: 20px;
+}
+
+.profile {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	cursor: pointer;
+}
+
+.profile img {
+	width: 40px;
+	height: 40px;
+	border-radius: 50%;
+}
+
+.search {
+	padding: 8px;
+	border-radius: 20px;
+	border: none;
+}
+
+.cards {
+	display: flex;
+	gap: 20px;
+	flex-wrap: wrap;
+	margin-top: 20px;
+}
+
+.card {
+	background: #ddd;
+	color: black;
+	padding: 15px;
+	border-radius: 20px;
+	width: 200px;
+}
+</style>
+
 </head>
+
 <body>
 
-	<h2>
-		Welcome
-		<%=user.getFirstName()%></h2>
+	<!-- TOP BAR -->
 
-	<!-- 🔹 Profile Section -->
-	<h3>My Profile</h3>
-	<p>
-		<b>Name:</b>
-		<%=user.getFirstName()%>
-		<%=user.getLastName()%></p>
-	<p>
-		<b>Email:</b>
-		<%=user.getEmail()%></p>
-	<p>
-		<b>Phone:</b>
-		<%=user.getPhoneNumber()%></p>
-	<p>
-		<b>License:</b>
-		<%=(driver != null && driver.getLicenseNumber() != null) ? driver.getLicenseNumber() : "Not Submitted"%>
-	</p>
+	<div class="topbar">
 
-	<a href="Driver_homeServlet?action=edit">Edit Profile</a>
+		<div class="profile" onclick="location.href='Driver_homeServlet?action=profile'">
+
+			<img src="<%=request.getContextPath()%>/images/driver_pic.jpg">
+			<b>Welcome, <%=driver.getName()%></b>
+		
+		</div>
+
+		<input class="search" placeholder="source"> 
+		<input class="search" placeholder="destination">
+
+		<button onclick="location.href='logoutServlet'">Logout</button>
+
+	</div>
 
 	<hr>
 
-	<!-- 🔹 Edit Profile -->
-	<%
-	if ("edit".equals(action)) {
-	%>
+	<h3>Live Trips</h3>
 
-	<h3>Edit Profile</h3>
-	<form method="post" action="Driver_homeServlet">
-
-		First Name:<br> <input type="text" name="first_name"
-			value="<%=user.getFirstName()%>" required><br>
-		<br> Last Name:<br> <input type="text" name="last_name"
-			value="<%=user.getLastName()%>" required><br>
-		<br> Phone:<br> <input type="text" name="phone_number"
-			value="<%=user.getPhoneNumber()%>" required><br>
-		<br>
-
-		<button type="submit">Update</button>
-
-	</form>
-
-	<hr>
-
-	<%
-	}
-	%>
-
-	<!-- 🔹 Upload License Document -->
-	<h3>Upload License Document</h3>
-
-	<form action="UploadDocumentServlet" method="post"
-		enctype="multipart/form-data">
-
-		<input type="file" name="document" required> <br>
-		<br>
-		<button type="submit">Upload</button>
-
-	</form>
-
-	<hr>
-
-	<!-- 🔹 Booking History -->
-	<h3>My Bookings</h3>
-
-	<%
-	if (bookings == null || bookings.isEmpty()) {
-	%>
-	<p>No bookings found.</p>
-	<%
-	} else {
-	%>
-
-	<table border="1" cellpadding="10">
-		<tr>
-			<th>ID</th>
-			<th>Source</th>
-			<th>Destination</th>
-			<th>Status</th>
-		</tr>
+	<div class="cards">
 
 		<%
-		for (Booking b : bookings) {
+		if (trips != null) {
+			for (Trip t : trips) {
 		%>
-		<tr>
-			<td><%=b.getBookingId()%></td>
-			<td><%=b.getSource()%></td>
-			<td><%=b.getDestination()%></td>
-			<td><%=b.getStatus()%></td>
-		</tr>
+
+		<div class="card">
+
+			<b>Trip <%=t.getTripId()%></b>
+
+			<p>
+				Source:
+				<%=t.getSource()%></p>
+
+			<p>
+				Destination:
+				<%=t.getDestination()%></p>
+
+			<p>
+				Date:
+				<%=t.getStartDate()%></p>
+
+			<form action="Driver_homeServlet" method="post">
+
+				<input type="hidden" name="action" value="acceptTrip"> <input
+					type="hidden" name="tripId" value="<%=t.getTripId()%>">
+
+				Price: <input type="number" name="price">
+
+				<button>Accept</button>
+
+			</form>
+
+			<form action="Driver_homeServlet" method="post">
+
+				<input type="hidden" name="action" value="rejectTrip"> <input
+					type="hidden" name="tripId" value="<%=t.getTripId()%>">
+
+				<button>Reject</button>
+
+			</form>
+
+		</div>
+
 		<%
+		}
 		}
 		%>
 
-	</table>
+	</div>
 
-	<%
-	}
-	%>
 
-	<br>
-	<br>
-<button onclick="location.href='logoutServlet'">
-    Logout
-</button>
+	<h3>Previous Bookings</h3>
+
+	<div class="cards">
+
+		<%
+		if (bookings != null) {
+			for (Booking b : bookings) {
+		%>
+
+		<div class="card">
+
+			<b>Booking <%=b.getBookingId()%></b>
+
+			<p>
+				Source:
+				<%=b.getSource()%></p>
+
+			<p>
+				Destination:
+				<%=b.getDestination()%></p>
+
+			<p>
+				Customer:
+				<%=b.getCustomerName()%></p>
+
+			<p>
+				Date:
+				<%=b.getStartDate()%></p>
+
+		</div>
+
+		<%
+		}
+		}
+		%>
+
+	</div>
+
 </body>
 </html>

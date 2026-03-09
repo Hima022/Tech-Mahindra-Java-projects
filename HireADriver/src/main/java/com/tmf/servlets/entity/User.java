@@ -1,38 +1,62 @@
 package com.tmf.servlets.entity;
 
-import java.sql.Date;
-
 public class User {
-	private int userId;
-	private String firstName;
-	private String lastName;
-	private String uname;
-	private String email;
-	private String phoneNumber;
-	private String password;
-	private String userType;
-	private String gender;
-	private Date dob;
-	private String address;
 
+	private int userId;
+	private String name;
+	private String email;
+	private String password;
+	private String phone;
+	private int age;
+	private String Gender;
+	private double rating;
 	
-	public User() {
+	
+	
+	
+    private int experience;
+	public double getRating() {
+		return rating;
 	}
-	public User(int userId, String firstName, String lastName, String uname, String email, String phoneNumber,
-			String password, String userType, String gender, Date dob, String address) {
-		//super();
-		this.userId = userId;
-		this.firstName = firstName;
-		this.lastName = lastName;
-		this.uname = uname;
-		this.email = email;
-		this.phoneNumber = phoneNumber;
-		this.password = password;
-		this.userType = userType;
-		this.gender = gender;
-		this.dob = dob;
-		this.address = address;
+
+	public void setRating(double rating) {
+		this.rating = rating;
 	}
+
+	public int getExperience() {
+		return experience;
+	}
+
+	public void setExperience(int experience) {
+		this.experience = experience;
+	}
+
+	private String ProfileImage;
+	public String getProfileImage() {
+		return ProfileImage;
+	}
+
+	public void setProfileImage(String profileImage) {
+		ProfileImage = profileImage;
+	}
+
+	public String getGender() {
+		return Gender;
+	}
+
+	public void setGender(String gender) {
+		Gender = gender;
+	}
+
+	public int getAge() {
+		return age;
+	}
+
+	public void setAge(int age) {
+		this.age = age;
+	}
+
+	private String userType;
 
 	public int getUserId() {
 		return userId;
@@ -42,28 +66,12 @@ public class User {
 		this.userId = userId;
 	}
 
-	public String getFirstName() {
-		return firstName;
+	public String getName() {
+		return name;
 	}
 
-	public void setFirstName(String firstName) {
-		this.firstName = firstName;
-	}
-
-	public String getLastName() {
-		return lastName;
-	}
-
-	public void setLastName(String lastName) {
-		this.lastName = lastName;
-	}
-
-	public String getUname() {
-		return uname;
-	}
-
-	public void setUname(String uname) {
-		this.uname = uname;
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	public String getEmail() {
@@ -74,14 +82,6 @@ public class User {
 		this.email = email;
 	}
 
-	public String getPhoneNumber() {
-		return phoneNumber;
-	}
-
-	public void setPhoneNumber(String phoneNumber) {
-		this.phoneNumber = phoneNumber;
-	}
-
 	public String getPassword() {
 		return password;
 	}
@@ -90,36 +90,20 @@ public class User {
 		this.password = password;
 	}
 
+	public String getPhone() {
+		return phone;
+	}
+
+	public void setPhone(String phone) {
+		this.phone = phone;
+	}
+
 	public String getUserType() {
 		return userType;
 	}
 
 	public void setUserType(String userType) {
 		this.userType = userType;
-	}
-
-	public String getGender() {
-		return gender;
-	}
-
-	public void setGender(String gender) {
-		this.gender = gender;
-	}
-
-	public Date getDob() {
-		return dob;
-	}
-
-	public void setDob(Date dob) {
-		this.dob = dob;
-	}
-
-	public String getAddress() {
-		return address;
-	}
-
-	public void setAddress(String address) {
-		this.address = address;
 	}
 
 }

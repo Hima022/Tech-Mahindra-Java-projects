@@ -13,40 +13,19 @@
 
 <div class="container">
 
-    <form action="LoginServlet" method="post">
-    <table>
-        <tr>
-            <th colspan="2" align="center">
-                <h2>Login Page</h2>
-            </th>
-        </tr>
+<form action="LoginServlet" method="post">
 
-        <tr>
-            <td>User name:</td>
-            <td><input name="uname" type="text" required></td>
-        </tr>
+<h2>Login</h2>
 
-        <tr>
-            <td>Password:</td>
-            <td><input name="password" type="password" required></td>
-        </tr>
+Email:
+<input type="email" name="email" required>
 
-        <tr>
-            <td colspan="2" align="center">
-                <input type="submit" value="Login">
-            </td>
-        </tr>
+Password:
+<input type="password" name="password" required>
 
-        <% if (request.getAttribute("error") != null) { %>
-        <tr>
-            <td colspan="2" align="center" style="color:red;">
-                <%= request.getAttribute("error") %>
-            </td>
-        </tr>
-        <% } %>
+<input type="submit" value="Login">
 
-    </table>
-    </form>
+</form>
 
 </div>
 

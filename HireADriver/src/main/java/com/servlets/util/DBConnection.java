@@ -6,8 +6,20 @@ public class DBConnection {
 	    private static final String USER = "root";
 	    private static final String PASSWORD = "Hima@@491";
 
-	    public static Connection getConnection() throws Exception {
-	        Class.forName("com.mysql.cj.jdbc.Driver");
-	        return DriverManager.getConnection(URL, USER, PASSWORD);
+	    public static Connection getConnection() {
+
+	        Connection con = null;
+
+	        try {
+
+	            Class.forName("com.mysql.cj.jdbc.Driver");
+
+	            con = DriverManager.getConnection(URL, USER, PASSWORD);
+
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	        }
+
+	        return con;
 	    }
 	}

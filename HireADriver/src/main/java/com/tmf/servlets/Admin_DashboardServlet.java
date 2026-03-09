@@ -12,7 +12,6 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 
 @WebServlet("/Admin_DashboardServlet")
 public class Admin_DashboardServlet extends HttpServlet {
@@ -25,33 +24,17 @@ public class Admin_DashboardServlet extends HttpServlet {
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
-		HttpSession session = request.getSession(false);
+		BookingDAO dao = new BookingDAOImpl();
 
-		if (session == null || !"ADMIN".equals(session.getAttribute("userType"))) {
-			response.sendRedirect("login.jsp");
-			return;
+		List<Booking> bookings = dao.getAllBookings();
+
+		for (Booking b : bookings) {
+
+			response.getWriter().println("Booking ID: " + b.getBookingId() + " Status: " + b.getStatus() + "<br>");
+
 		}
 
-		try {
-
-			BookingDAO bookingDAO = new BookingDAOImpl();
-			List<Booking> bookings = bookingDAO.getAllBookings();
-
-			StringBuffer sb = new StringBuffer();
-			sb.append("<h2>All Bookings</h2>");
-
-			for (Booking b : bookings) {
-				sb.append("Booking ID: ").append(b.getBookingId()).append(" | Status: ").append(b.getStatus())
-						.append("<br>");
-			}
-
-			response.getWriter().println(sb.toString());
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
 	}
-
 
 
 	protected void doPost(HttpServletRequest request, HttpServletResponse response)
