@@ -10,82 +10,87 @@ import com.servlets.util.DBConnection;
 
 import com.tmf.servlets.entity.Trip;
 
-public class DriverDAOImpl implements DriverDAO {
 
-	Connection con = DBConnection.getConnection();
 
-	public List<Trip> getLiveTrips() {
+	public class DriverDAOImpl implements DriverDAO {
 
-		List<Trip> trips = new ArrayList<>();
+	    Connection con = DBConnection.getConnection();
 
-		try {
+	    @Override
+	    public List<Trip> getLiveTrips() {
 
-			String sql = "SELECT * FROM trips WHERE status='LIVE'";
+	        List<Trip> trips = new ArrayList<>();
 
-			PreparedStatement ps = con.prepareStatement(sql);
+	        try {
 
-			ResultSet rs = ps.executeQuery();
+	            String sql = "SELECT * FROM trips WHERE status='LIVE'";
 
-			while (rs.next()) {
+	            PreparedStatement ps = con.prepareStatement(sql);
 
-				
-				
-				Trip t = new Trip();
+	            ResultSet rs = ps.executeQuery();
 
-				t.setTripId(rs.getInt("trip_id"));
-				t.setSource(rs.getString("source"));
-				t.setDestination(rs.getString("destination"));
-				t.setStartDate(rs.getDate("start_date"));
-				t.setPrice(rs.getDouble("price"));
-				trips.add(t);
-			}
+	            while (rs.next()) {
 
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+	                Trip t = new Trip();
 
-		return trips;
+	                t.setTripId(rs.getInt("trip_id"));
+	                t.setCustomerId(rs.getInt("customer_id"));
+	                t.setSource(rs.getString("source"));
+	                t.setDestination(rs.getString("destination"));
+	                t.setStartDate(rs.getTimestamp("start_date"));
+	                t.setEndDate(rs.getTimestamp("end_date"));
+	                t.setDurationHrs(rs.getInt("duration_hrs"));
+	                t.setPrice(rs.getDouble("price"));
+
+	                trips.add(t);
+	            }
+
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	        }
+
+	        return trips;
+	    }
+
+	    @Override
+	    public void acceptTrip(int tripId, int driverId) {
+
+	        try {
+
+	            String sql =
+	            "UPDATE bookings SET status='CONFIRMED', driver_id=? WHERE trip_id=?";
+
+	            PreparedStatement ps = con.prepareStatement(sql);
+
+	            ps.setInt(1, driverId);
+	            ps.setInt(2, tripId);
+
+	            ps.executeUpdate();
+
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	        }
+
+	    }
+
+	    @Override
+	    public void rejectTrip(int tripId, int driverId) {
+
+	        try {
+
+	            String sql =
+	            "UPDATE bookings SET status='REJECTED', driver_id=? WHERE trip_id=?";
+
+	            PreparedStatement ps = con.prepareStatement(sql);
+
+	            ps.setInt(1, driverId);
+	            ps.setInt(2, tripId);
+
+	            ps.executeUpdate();
+
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	        }
+
+	    }
 	}
-
-	public void acceptTrip(int tripId, int driverId, double price) {
-
-		try {
-
-			String sql = "INSERT INTO driver_trip_requests(trip_id,driver_id,driver_price,status) VALUES(?,?,?,'ACCEPTED')";
-
-			PreparedStatement ps = con.prepareStatement(sql);
-
-			ps.setInt(1, tripId);
-			ps.setInt(2, driverId);
-			ps.setDouble(3, price);
-
-			ps.executeUpdate();
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-	}
-
-	public void rejectTrip(int tripId, int driverId) {
-
-		try {
-
-			String sql = "INSERT INTO driver_trip_requests(trip_id,driver_id,status) VALUES(?,?,'REJECTED')";
-
-			PreparedStatement ps = con.prepareStatement(sql);
-
-			ps.setInt(1, tripId);
-			ps.setInt(2, driverId);
-
-			ps.executeUpdate();
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-	}
-
-	
-
-}

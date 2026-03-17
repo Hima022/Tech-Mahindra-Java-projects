@@ -5,10 +5,11 @@
 <%@ page import="java.util.List"%>
 <%@ page import="com.tmf.servlets.entity.*"%>
 
+<%@ taglib prefix="hd" uri="http://hireadrive/tags"%>
+
 <%
 User user = (User) request.getAttribute("user");
 List<Trip> trips = (List<Trip>) request.getAttribute("trips");
-List<Booking> bookings = (List<Booking>) request.getAttribute("bookings");
 String action = request.getParameter("action");
 %>
 
@@ -19,198 +20,143 @@ String action = request.getParameter("action");
 <title>Customer Dashboard</title>
 
 <style>
-
-body{
-background:black;
-color:white;
-font-family:Arial;
-padding:20px;
+body {
+	background: black;
+	color: white;
+	font-family: Arial;
+	padding: 20px;
 }
 
-.topbar{
-display:flex;
-align-items:center;
-gap:190px;
-button:right-corner;
+.topbar {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
 }
 
-.profile{
-display:flex;
-align-items:center;
-gap:10px;
-cursor:pointer;
+.cards {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 20px;
+	margin-top: 20px;
 }
 
-.profile img{
-width:40px;
-height:40px;
-border-radius:50%;
+.card {
+	background: white;
+	color: black;
+	padding: 15px;
+	border-radius: 10px;
+	width: 220px;
 }
 
-.search{
-padding:10px;
-border-radius:20px;
-border:none;
+button {
+	padding: 8px 15px;
+	background: #007BFF;
+	color: white;
+	border: none;
+	margin-top: 10px;
+	cursor: pointer;
 }
-
-.cards{
-display:flex;
-gap:20px;
-flex-wrap:wrap;
-margin-top:20px;
-}
-
-.card{
-background:white;
-color:black;
-padding:15px;
-border-radius:15px;
-width:200px;
-}
-
-/* ADD TRIP BUTTON */
-
-.addCard{
-display:flex;
-justify-content:center;
-box-size:10px;
-align-items:center;
-font-size:5px;
-cursor:pointer;
-}
-
 </style>
 
 </head>
 
 <body>
 
-<!-- TOP BAR -->
+	<div class="topbar">
 
-<div class="topbar">
+		<div>
+			<h2>Hire-A-Driver | Customer Dashboard</h2>
+			<p>
+				Welcome <b><%=user.getName()%></b>
+			</p>
+		</div>
 
-<div class="profile"
-onclick="location.href='Customer_homeServlet?action=profile'">
+		<div>
+			<a href="logoutServlet">
+				<button>Logout</button>
+			</a>
+		</div>
 
-<img src="<%=request.getContextPath()%>/images/photo.jpg">
+	</div>
 
-<b>Welcome, <%=user.getName()%></b>
+	<hr>
 
-</div>
+	<h3>Your Trips</h3>
 
-<input class="search" placeholder="source">
-<input class="search" placeholder="destination">
+	<div class="cards">
 
-<button onclick="location.href='logoutServlet'">
-Logout
-</button>
+		<div class="card">
+			<a href="Customer_homeServlet?action=addTrip">+ Add Trip</a>
+		</div>
 
-</div>
+		<%
+		if (trips != null) {
+			for (Trip t : trips) {
+		%>
 
-<hr>
+		<div class="card">
 
-<h3>Trips</h3>
+			<b><%=t.getSource()%> → <%=t.getDestination()%></b>
 
-<div class="cards">
+			<p>
+				Date :
+				<%=t.getStartDate()%></p>
 
-<!-- + ADD TRIP BUTTON -->
+			<p>
+				Price : ₹<%=t.getPrice()%></p>
 
-<div class="card addCard">
+			<!-- BOOK DRIVER BUTTON -->
 
-<a href="Customer_homeServlet?action=addTrip"
-style="text-decoration:none;font-size:40px;color:black;">
-+
-</a>
+			<form action="CreateBookingServlet" method="post">
 
-</div>
+				<input type="hidden" name="tripId" value="<%=t.getTripId()%>">
+				<input type="hidden" name="driverId" value="1">
 
+				<button>Book Driver</button>
 
-<%
-if(trips!=null){
-for(Trip t:trips){
-%>
+			</form>
+		</div>
 
-<div class="card">
+		<%
+		}
+		}
+		%>
 
-<p><b><%=t.getSource()%> → <%=t.getDestination()%></b></p>
-
-<p>Date: <%= t.getStartDate() != null ? t.getStartDate() : "Not Set" %></p>
-
-</div>
-
-<%
-}
-}
-%>
-
-</div>
-
-
-<!-- CREATE TRIP FORM -->
-
-<%
-if("addTrip".equals(action)){
-%>
-
-<h3>Create Trip</h3>
-
-<form action="Customer_homeServlet" method="post">
-
-<input type="hidden" name="action" value="createTrip">
-
-Source
-<input type="text" name="source" required>
-
-Destination
-<input type="text" name="destination" required>
-Start Date
-<input type="date" name="start_date" required>
-
-End Date
-<input type="date" name="end_date" required>
+	</div>
 
 
-Duration
-<input type="number" name="duration">
+	<%
+	if ("addTrip".equals(action)) {
+	%>
 
-Price
-<input type="number" name="price">
+	<h3>Create Trip</h3>
 
-<button>Create Trip</button>
+	<form action="Customer_homeServlet" method="post">
 
-</form>
+		<input type="hidden" name="action" value="createTrip"> Source
+		<input type="text" name="source"> Destination <input
+			type="text" name="destination"> Start Date <input type="date"
+			name="start_date"> End Date <input type="date"
+			name="end_date"> Duration <input type="number"
+			name="duration"> Price <input type="number" name="price">
 
-<%
-}
-%>
+		<button>Create Trip</button>
+
+	</form>
+
+	<%
+	}
+	%>
 
 
+	<h3>Previous Bookings</h3>
 
-<h3>Previous Bookings</h3>
+	<table>
+		
 
-<div class="cards">
+		<hd:bookingTable bookings="${bookingsList}" />
 
-<%
-if(bookings!=null){
-for(Booking b:bookings){
-%>
-
-<div class="card">
-
-<p><b>Booking <%=b.getBookingId()%></b></p>
-
-<p><%=b.getSource()%> → <%=b.getDestination()%></p>
-
-<p>Status: <%=b.getStatus()%></p>
-
-</div>
-
-<%
-}
-}
-%>
-
-</div>
+	</table>
 
 </body>
 

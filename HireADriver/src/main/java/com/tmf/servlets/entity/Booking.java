@@ -1,81 +1,80 @@
 package com.tmf.servlets.entity;
 
-import java.sql.Date;
-
 public class Booking {
 
-	private int bookingId;
-	private int tripId;
-	private String Source;
-	private String Destination;
-	private String customerName;
-	
-	public String getCustomerName() {
-		return customerName;
-	}
+    private int bookingId;
+    private int tripId;
+    private int customerId;
+    private int driverId;
 
-	public void setCustomerName(String customerName) {
-		this.customerName = customerName;
-	}
+    private String status;
 
-	public Date getStartDate() {
-		return startDate;
-	}
+    // extra fields for dashboard display
+    private String source;
+    private String destination;
+    private double price;
 
-	public void setStartDate(Date startDate) {
-		this.startDate = startDate;
-	}
+    public int getBookingId() {
+        return bookingId;
+    }
 
-	private Date startDate;
-	public String getSource() {
-		return Source;
-	}
+    public void setBookingId(int bookingId) {
+        this.bookingId = bookingId;
+    }
 
-	public void setSource(String source) {
-		Source = source;
-	}
+    public int getTripId() {
+        return tripId;
+    }
 
-	public String getDestination() {
-		return Destination;
-	}
+    public void setTripId(int tripId) {
+        this.tripId = tripId;
+    }
 
-	public void setDestination(String destination) {
-		Destination = destination;
-	}
+    public int getCustomerId() {
+        return customerId;
+    }
 
-	private int driverId;
-	private String status;
+    public void setCustomerId(int customerId) {
+        this.customerId = customerId;
+    }
 
-	public int getBookingId() {
-		return bookingId;
-	}
+    public int getDriverId() {
+        return driverId;
+    }
 
-	public void setBookingId(int bookingId) {
-		this.bookingId = bookingId;
-	}
+    public void setDriverId(int driverId) {
+        this.driverId = driverId;
+    }
 
-	public int getTripId() {
-		return tripId;
-	}
+    public String getStatus() {
+        return status;
+    }
 
-	public void setTripId(int tripId) {
-		this.tripId = tripId;
-	}
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
-	public int getDriverId() {
-		return driverId;
-	}
+    public String getSource() {
+        return source;
+    }
 
-	public void setDriverId(int driverId) {
-		this.driverId = driverId;
-	}
+    public void setSource(String source) {
+        this.source = source;
+    }
 
-	public String getStatus() {
-		return status;
-	}
+    public String getDestination() {
+        return destination;
+    }
 
-	public void setStatus(String status) {
-		this.status = status;
-	}
+    public void setDestination(String destination) {
+        this.destination = destination;
+    }
 
+    public double getPrice() {
+        return price;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
 }

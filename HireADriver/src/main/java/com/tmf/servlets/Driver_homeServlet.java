@@ -11,18 +11,14 @@ import com.tmf.servlets.dao.DriverDAOImpl;
 import com.tmf.servlets.dao.UserDAO;
 import com.tmf.servlets.dao.UserDAOImpl;
 import com.tmf.servlets.entity.Booking;
-
 import com.tmf.servlets.entity.Trip;
 import com.tmf.servlets.entity.User;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
-import jakarta.servlet.http.Part;
+import jakarta.servlet.http.*;
+
 @MultipartConfig
 @WebServlet("/Driver_homeServlet")
 public class Driver_homeServlet extends HttpServlet {
@@ -38,7 +34,9 @@ public class Driver_homeServlet extends HttpServlet {
 
 		HttpSession session = request.getSession(false);
 
-		if (session == null || !"DRIVER".equals(session.getAttribute("userType"))) {
+		if (session == null || session.getAttribute("userId") == null
+				|| !"DRIVER".equals(session.getAttribute("userType"))) {
+
 			response.sendRedirect("login.jsp");
 			return;
 		}
@@ -51,13 +49,13 @@ public class Driver_homeServlet extends HttpServlet {
 			DriverDAO driverDAO = new DriverDAOImpl();
 			BookingDAO bookingDAO = new BookingDAOImpl();
 
-			// Logged-in driver (from users table)
+			// Logged-in driver info
 			User driver = userDAO.getUserById(driverId);
 
-			// Live trips available
+			// Trips created by customers
 			List<Trip> trips = driverDAO.getLiveTrips();
 
-			// Driver's bookings
+			// Bookings assigned to this driver
 			List<Booking> bookings = bookingDAO.getBookingsByDriver(driverId);
 
 			request.setAttribute("driver", driver);
@@ -71,13 +69,12 @@ public class Driver_homeServlet extends HttpServlet {
 		}
 	}
 
-	// Handle Accept / Reject
-	protected void doPost(HttpServletRequest request, HttpServletResponse response)
-			throws IOException {
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
 
 		HttpSession session = request.getSession(false);
 
-		if (session == null) {
+		if (session == null || session.getAttribute("userId") == null) {
+
 			response.sendRedirect("login.jsp");
 			return;
 		}
@@ -86,30 +83,32 @@ public class Driver_homeServlet extends HttpServlet {
 
 		String action = request.getParameter("action");
 
-		DriverDAO dao = new DriverDAOImpl();
+		DriverDAO driverDAO = new DriverDAOImpl();
 
 		try {
 
+			// DRIVER ACCEPTS TRIP
 			if ("acceptTrip".equals(action)) {
 
 				int tripId = Integer.parseInt(request.getParameter("tripId"));
-				double price = Double.parseDouble(request.getParameter("price"));
 
-				dao.acceptTrip(tripId, driverId, price);
+				driverDAO.acceptTrip(tripId, driverId);
 			}
 
+			// DRIVER REJECTS TRIP
 			else if ("rejectTrip".equals(action)) {
 
 				int tripId = Integer.parseInt(request.getParameter("tripId"));
 
-				dao.rejectTrip(tripId, driverId);
+				driverDAO.rejectTrip(tripId, driverId);
 			}
-			else if("updateProfile".equals(action)){
+
+			// DRIVER PROFILE UPDATE
+			else if ("updateProfile".equals(action)) {
 
 				String name = request.getParameter("name");
 				String email = request.getParameter("email");
 				String phone = request.getParameter("phone");
-				int experience = Integer.parseInt(request.getParameter("experience"));
 
 				Part license = request.getPart("license");
 				Part idproof = request.getPart("idproof");
@@ -117,8 +116,9 @@ public class Driver_homeServlet extends HttpServlet {
 				String uploadPath = getServletContext().getRealPath("") + "documents";
 
 				File uploadDir = new File(uploadPath);
-				if(!uploadDir.exists()){
-				uploadDir.mkdir();
+
+				if (!uploadDir.exists()) {
+					uploadDir.mkdir();
 				}
 
 				String licenseName = license.getSubmittedFileName();
@@ -127,9 +127,10 @@ public class Driver_homeServlet extends HttpServlet {
 				license.write(uploadPath + "/" + licenseName);
 				idproof.write(uploadPath + "/" + idName);
 
-				UserDAO.updateDriverProfile(driverId,name,email,phone,experience,licenseName,idName);
+				UserDAO userDAO = new UserDAOImpl();
 
-				}
+				userDAO.updateProfile(driverId, name, email, phone, 0, licenseName);
+			}
 
 		} catch (Exception e) {
 			e.printStackTrace();

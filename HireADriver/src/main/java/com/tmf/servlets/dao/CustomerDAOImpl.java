@@ -13,86 +13,87 @@ public class CustomerDAOImpl implements CustomerDAO {
 
 	Connection con = DBConnection.getConnection();
 
-	@Override
-	public void createTrip(Trip trip) {
 
-	    try {
+	    @Override
+	    public void createTrip(Trip trip) {
 
-	        String sql =
-	        "INSERT INTO trips(customer_id,source,destination,start_date,end_date,duration_days,price,status) VALUES(?,?,?,?,?,?,?,?)";
+	        try {
 
-	        PreparedStatement ps = con.prepareStatement(sql);
-	        
-	        ps.setInt(1, trip.getCustomerId());
-	        ps.setString(2, trip.getSource());
-	        ps.setString(3, trip.getDestination());
-	        ps.setDate(4, trip.getStartDate());
-	        ps.setDate(5, trip.getEndDate());
-	        ps.setInt(6, trip.getDurationDays());
-	        ps.setDouble(7, trip.getPrice());
-	        ps.setString(8, "LIVE");
+	            String sql =
+	            "INSERT INTO trips(customer_id,source,destination,start_date,end_date,duration_hrs,price,status) VALUES(?,?,?,?,?,?,?,?)";
 
-	        ps.executeUpdate();
+	            PreparedStatement ps = con.prepareStatement(sql);
 
-	    } catch(Exception e){
-	        e.printStackTrace();
+	            ps.setInt(1, trip.getCustomerId());
+	            ps.setString(2, trip.getSource());
+	            ps.setString(3, trip.getDestination());
+	            ps.setTimestamp(4, trip.getStartDate());
+	            ps.setTimestamp(5, trip.getEndDate());
+	            ps.setInt(6, trip.getDurationHrs());
+	            ps.setDouble(7, trip.getPrice());
+	            ps.setString(8, "LIVE");
+
+	            ps.executeUpdate();
+
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	        }
 	    }
-	}
 
-	@Override
-	public List<Trip> getTripsByCustomer(int customerId) {
+	    @Override
+	    public List<Trip> getTripsByCustomer(int customerId) {
 
-	    List<Trip> trips = new ArrayList<>();
+	        List<Trip> trips = new ArrayList<>();
 
-	    try {
+	        try {
 
-	        String sql = "SELECT * FROM trips WHERE customer_id=?";
+	            String sql = "SELECT * FROM trips WHERE customer_id=?";
 
-	        PreparedStatement ps = con.prepareStatement(sql);
-	        ps.setInt(1, customerId);
+	            PreparedStatement ps = con.prepareStatement(sql);
 
-	        ResultSet rs = ps.executeQuery();
+	            ps.setInt(1, customerId);
 
-	        while(rs.next()){
+	            ResultSet rs = ps.executeQuery();
 
-	            Trip t = new Trip();
+	            while (rs.next()) {
 
-	            t.setTripId(rs.getInt("trip_id"));
-	            t.setSource(rs.getString("source"));
-	            t.setDestination(rs.getString("destination"));
+	                Trip t = new Trip();
 
-	            t.setStartDate(rs.getDate("start_date"));   // IMPORTANT
-	            t.setEndDate(rs.getDate("end_date"));       // IMPORTANT
+	                t.setTripId(rs.getInt("trip_id"));
+	                t.setCustomerId(rs.getInt("customer_id"));
+	                t.setSource(rs.getString("source"));
+	                t.setDestination(rs.getString("destination"));
+	                t.setStartDate(rs.getTimestamp("start_date"));
+	                t.setEndDate(rs.getTimestamp("end_date"));
+	                t.setDurationHrs(rs.getInt("duration_hrs"));
+	                t.setPrice(rs.getDouble("price"));
 
-	            t.setPrice(rs.getDouble("price"));
+	                trips.add(t);
+	            }
 
-	            trips.add(t);
+	        } catch (Exception e) {
+	            e.printStackTrace();
 	        }
 
-	    }catch(Exception e){
-	        e.printStackTrace();
+	        return trips;
 	    }
 
-	    return trips;
+	    @Override
+	    public void updateTripStatus(int tripId, String status) {
+
+	        try {
+
+	            String sql = "UPDATE trips SET status=? WHERE trip_id=?";
+
+	            PreparedStatement ps = con.prepareStatement(sql);
+
+	            ps.setString(1, status);
+	            ps.setInt(2, tripId);
+
+	            ps.executeUpdate();
+
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	        }
+	    }
 	}
-	@Override
-	public void updateTripStatus(int tripId, String status) {
-
-		try {
-
-			String sql = "UPDATE trips SET status=? WHERE trip_id=?";
-
-			PreparedStatement ps = con.prepareStatement(sql);
-
-			ps.setString(1, status);
-			ps.setInt(2, tripId);
-
-			ps.executeUpdate();
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-	}
-	
-}

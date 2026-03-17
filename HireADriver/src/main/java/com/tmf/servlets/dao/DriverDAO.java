@@ -7,12 +7,11 @@ import com.tmf.servlets.entity.Trip;
 
 public interface DriverDAO {
 
-	List<Trip> getLiveTrips();
 
-	void acceptTrip(int tripId, int driverId, double price);
+	    List<Trip> getLiveTrips();
 
-	void rejectTrip(int tripId, int driverId);
+	    void acceptTrip(int tripId, int driverId);
 
-	
+	    void rejectTrip(int tripId, int driverId);
 
-}
+	}

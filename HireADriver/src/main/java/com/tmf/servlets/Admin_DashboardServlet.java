@@ -26,13 +26,13 @@ public class Admin_DashboardServlet extends HttpServlet {
 
 		BookingDAO dao = new BookingDAOImpl();
 
-		List<Booking> bookings = dao.getAllBookings();
+		//List<Booking> bookings = dao.getAllBookings();
 
-		for (Booking b : bookings) {
+		/*for (Booking b : bookings) {
 
 			response.getWriter().println("Booking ID: " + b.getBookingId() + " Status: " + b.getStatus() + "<br>");
 
-		}
+		}*/
 
 	}
 
